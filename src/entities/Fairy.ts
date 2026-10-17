@@ -1,0 +1,230 @@
+import Phaser from 'phaser';
+import { FAIRY, FAIRY_COLORS, GAME_WIDTH, PLAYER_KEYS, type FairyColorName } from '../shared/config';
+import type { IFairy, PlayerConfig, PlayerId, Point } from '../shared/types';
+import { normalize } from '../systems/geometry';
+import { FUNNY_FONT, LAYER } from '../systems/layers';
+
+type ControlName = keyof (typeof PLAYER_KEYS)[number];
+type Controls = Record<ControlName, Phaser.Input.Keyboard.Key>;
+
+/**
+ * J1 + J2: hada geométrica controlada por teclado.
+ * Círculo del color del jugador, alas triangulares que aletean, carita que parpadea y estela de brillos.
+ */
+export class Fairy implements IFairy {
+  readonly playerId: PlayerId;
+  readonly color: FairyColorName;
+  readonly radius = FAIRY.radius;
+  /** Lo ajustan los power-ups (Café de rocío). */
+  speedMultiplier = 1;
+
+  private readonly scene: Phaser.Scene;
+  private readonly controls?: Controls;
+  private readonly pos: Point;
+  private readonly root: Phaser.GameObjects.Container;
+  private readonly bodyParts: Phaser.GameObjects.Container;
+  private readonly aura: Phaser.GameObjects.Arc;
+  private readonly eyes: Phaser.GameObjects.Graphics;
+  private readonly tint: number;
+  private bubble?: Phaser.GameObjects.Text;
+  private moving = false;
+  private boosted = false;
+  private lastTrailAt = 0;
+
+  constructor(scene: Phaser.Scene, player: PlayerConfig, start: Point) {
+    this.scene = scene;
+    this.playerId = player.id;
+    this.color = player.color;
+    this.tint = FAIRY_COLORS[player.color];
+    this.pos = { ...start };
+
+    const keyboard = scene.input.keyboard;
+    const keys = PLAYER_KEYS[player.keysIndex];
+    if (keyboard && keys) this.controls = keyboard.addKeys({ ...keys }) as Controls;
+
+    const r = this.radius;
+    this.aura = scene.add.circle(0, 0, r * 1.9, this.tint, 0.18);
+
+    const wings = [-1, 1].map((side) => {
+      const wing = scene.add.graphics();
+      wing.fillStyle(0xffffff, 0.75);
+      wing.fillTriangle(0, 0, side * r * 1.7, -r * 1.3, side * r * 1.5, r * 0.2);
+      wing.fillStyle(this.tint, 0.45);
+      wing.fillTriangle(0, r * 0.1, side * r * 1.3, r * 0.2, side * r * 1.0, r * 1.0);
+      wing.setPosition(side * r * 0.3, -r * 0.1);
+      scene.tweens.add({
+        targets: wing,
+        scaleX: 0.35,
+        duration: 110,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+        delay: Math.random() * 100,
+      });
+      return wing;
+    });
+
+    const body = scene.add.circle(0, 0, r, this.tint).setStrokeStyle(2, 0xffffff, 0.8);
+    const shine = scene.add.circle(-r * 0.35, -r * 0.4, r * 0.25, 0xffffff, 0.6);
+
+    const face = scene.add.graphics();
+    face.fillStyle(0xff8fab, 0.7);
+    face.fillCircle(-r * 0.55, r * 0.2, r * 0.18);
+    face.fillCircle(r * 0.55, r * 0.2, r * 0.18);
+    face.lineStyle(2, 0x2b1b2e, 1);
+    face.beginPath();
+    face.arc(0, r * 0.15, r * 0.32, 0.25, Math.PI - 0.25, false);
+    face.strokePath();
+
+    this.eyes = scene.add.graphics();
+    this.eyes.fillStyle(0x2b1b2e, 1);
+    this.eyes.fillCircle(-r * 0.3, -r * 0.15, r * 0.14);
+    this.eyes.fillCircle(r * 0.3, -r * 0.15, r * 0.14);
+    this.eyes.fillStyle(0xffffff, 1);
+    this.eyes.fillCircle(-r * 0.26, -r * 0.2, r * 0.05);
+    this.eyes.fillCircle(r * 0.34, -r * 0.2, r * 0.05);
+
+    // Antena con estrellita, porque toda hada que se precie lleva una.
+    const antenna = scene.add.graphics();
+    antenna.lineStyle(2, 0xffffff, 0.9);
+    antenna.lineBetween(0, -r, r * 0.25, -r * 1.55);
+    antenna.fillStyle(0xfff59d, 1);
+    antenna.fillPoints(starPoints(r * 0.25, -r * 1.65, r * 0.32, r * 0.14), true);
+
+    this.bodyParts = scene.add.container(0, 0, [...wings, body, shine, face, this.eyes, antenna]);
+    this.root = scene.add.container(start.x, start.y, [this.aura, this.bodyParts]).setDepth(LAYER.fairies);
+
+    scene.tweens.add({ targets: this.bodyParts, y: -4, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    scene.tweens.add({ targets: this.aura, scale: 1.15, alpha: 0.3, duration: 900, yoyo: true, repeat: -1 });
+    scene.time.addEvent({ delay: 2600 + Math.random() * 1500, loop: true, callback: () => this.blink() });
+  }
+
+  get position(): Point {
+    return { ...this.pos };
+  }
+
+  setPosition(p: Point): void {
+    this.pos.x = p.x;
+    this.pos.y = p.y;
+    this.root.setPosition(p.x, p.y);
+  }
+
+  /** True solo en el frame en que se pulsa la tecla de hechizo. */
+  wantsToCast(): boolean {
+    return !!this.controls && Phaser.Input.Keyboard.JustDown(this.controls.spell);
+  }
+
+  update(time: number, delta: number): void {
+    const c = this.controls;
+    const dir = c
+      ? normalize(Number(c.right.isDown) - Number(c.left.isDown), Number(c.down.isDown) - Number(c.up.isDown))
+      : { x: 0, y: 0 };
+    const step = (FAIRY.speed * this.speedMultiplier * delta) / 1000;
+    this.moving = dir.x !== 0 || dir.y !== 0;
+
+    if (this.moving) {
+      this.setPosition({ x: this.pos.x + dir.x * step, y: this.pos.y + dir.y * step });
+      if (dir.x !== 0) this.bodyParts.scaleX = dir.x > 0 ? 1 : -1;
+      this.bodyParts.angle = dir.x * 8;
+    } else {
+      this.bodyParts.angle = 0;
+    }
+
+    const trailEvery = this.boosted ? 30 : 70;
+    if ((this.moving || this.boosted) && time - this.lastTrailAt > trailEvery) {
+      this.lastTrailAt = time;
+      this.sparkle();
+    }
+  }
+
+  /** Activa el modo "con power-up": aura más grande y estela continua. */
+  setBoosted(boosted: boolean): void {
+    if (boosted === this.boosted) return;
+    this.boosted = boosted;
+    this.aura.setFillStyle(boosted ? 0xffffff : this.tint, boosted ? 0.35 : 0.18);
+  }
+
+  /** Bocadillo con una frase graciosa que sube y se desvanece. */
+  say(text: string): void {
+    this.bubble?.destroy();
+    const bubble = this.scene.add
+      .text(this.pos.x, this.pos.y - this.radius * 2.6, text, {
+        fontFamily: FUNNY_FONT,
+        fontSize: '20px',
+        fontStyle: 'bold',
+        color: '#ffffff',
+        stroke: Phaser.Display.Color.IntegerToColor(this.tint).darken(35).rgba,
+        strokeThickness: 5,
+      })
+      .setOrigin(0.5)
+      .setDepth(LAYER.bubbles)
+      .setScale(0.3);
+    // Que no se salga de la pantalla cuando el hada está en un borde.
+    const half = (bubble.width * 1.1) / 2 + 4; // 1.1: rebote de Back.easeOut
+    bubble.x = Phaser.Math.Clamp(bubble.x, half, GAME_WIDTH - half);
+    bubble.y = Math.max(bubble.y, (bubble.height * 1.1) / 2 + 4);
+    const rise = Math.min(30, bubble.y - bubble.height / 2 - 4);
+    this.bubble = bubble;
+    this.scene.tweens.add({ targets: bubble, scale: 1, duration: 220, ease: 'Back.easeOut' });
+    this.scene.tweens.add({
+      targets: bubble,
+      y: bubble.y - rise,
+      alpha: 0,
+      delay: 700,
+      duration: 600,
+      onComplete: () => {
+        bubble.destroy();
+        if (this.bubble === bubble) this.bubble = undefined;
+      },
+    });
+  }
+
+  /** Aplastamiento cómico al chocar. */
+  squash(): void {
+    this.scene.tweens.add({ targets: this.root, scaleX: 1.35, scaleY: 0.7, duration: 90, yoyo: true, ease: 'Quad.easeOut' });
+  }
+
+  /** Saltito de alegría al encantar flores. */
+  celebrate(): void {
+    this.scene.tweens.add({ targets: this.root, scale: 1.25, duration: 120, yoyo: true, ease: 'Back.easeOut' });
+  }
+
+  destroy(): void {
+    this.bubble?.destroy();
+    this.root.destroy();
+  }
+
+  private blink(): void {
+    this.scene.tweens.add({ targets: this.eyes, scaleY: 0.1, duration: 70, yoyo: true });
+  }
+
+  private sparkle(): void {
+    const s = this.scene.add
+      .circle(
+        this.pos.x + Phaser.Math.Between(-8, 8),
+        this.pos.y + Phaser.Math.Between(4, 14),
+        Phaser.Math.Between(2, 4),
+        Math.random() < 0.5 ? 0xffffff : this.tint,
+      )
+      .setDepth(LAYER.fairies - 1);
+    this.scene.tweens.add({
+      targets: s,
+      alpha: 0,
+      scale: 0.2,
+      y: s.y + 12,
+      duration: 500,
+      onComplete: () => s.destroy(),
+    });
+  }
+}
+
+/** Vértices de una estrella de 5 puntas. */
+export function starPoints(cx: number, cy: number, outer: number, inner: number): Phaser.Math.Vector2[] {
+  const points: Phaser.Math.Vector2[] = [];
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 === 0 ? outer : inner;
+    const a = -Math.PI / 2 + (i * Math.PI) / 5;
+    points.push(new Phaser.Math.Vector2(cx + Math.cos(a) * r, cy + Math.sin(a) * r));
+  }
+  return points;
+}

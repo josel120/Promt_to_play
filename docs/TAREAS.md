@@ -17,7 +17,7 @@ Carpetas: `src/scenes/`, `src/world/`, `src/ui/`, `assets/`
 
 - [x] T1. Esqueleto y escenas: Boot, MainMenu, PlayerSelect, Game, Results
 - [x] T2. Bosque geométrico: fondo, límites, árboles (círculos), rocas (polígonos)
-- [x] T3. `FlowerSpawner`: flores en posiciones válidas (usa `Flower` de Jose)
+- [x] T3. Reparto de flores (`planFlowers`): posiciones válidas para las `Flower` de Jose
 - [x] T4. Selección de jugadores: cada uno elige su color
 - [x] T5. HUD: temporizador y marcador por color (escucha `SCORE_CHANGED`)
 - [x] T6. Resultados: ranking y revancha
@@ -30,23 +30,19 @@ Carpetas: `src/scenes/`, `src/world/`, `src/ui/`, `assets/`
 ## 🧚‍♂️ Jose: Gameplay
 Carpetas: `src/entities/`, `src/systems/`
 
-- [ ] J1. `Fairy` (implementa `IFairy`): círculo del color del hada con alas triangulares
-- [ ] J2. Movimiento por jugador usando `PLAYER_KEYS`
-- [ ] J3. `Flower` (implementa `IFlower`): estados neutral (blanca/gris) y pintada
-- [ ] J4. Hechizo: área `SPELL.radius`, cooldown `SPELL.cooldownMs`, emite `SPELL_CAST`
-- [ ] J5. Pintar flores en el área, emite `FLOWER_PAINTED`
-- [ ] J6. Repintado y protección temporal (`FLOWER.protectionMs`)
-- [ ] J7. `ScoreSystem`: emite `SCORE_CHANGED`
-- [ ] J8. Colisiones con límites y entre hadas
-- [ ] J9. (Extra) Power-ups
-- [ ] J10. Tests de puntuación y reglas
+- [x] J1. `Fairy` (implementa `IFairy`): círculo del color del hada con alas triangulares
+- [x] J2. Movimiento por jugador usando `PLAYER_KEYS`
+- [x] J3. `Flower` (implementa `IFlower`): estados neutral (blanca/gris) y pintada
+- [x] J4. Hechizo: área `SPELL.radius`, cooldown `SPELL.cooldownMs`, emite `SPELL_CAST`
+- [x] J5. Pintar flores en el área, emite `FLOWER_PAINTED`
+- [x] J6. Repintado y protección temporal (`FLOWER.protectionMs`)
+- [x] J7. `ScoreSystem`: emite `SCORE_CHANGED`
+- [x] J8. Colisiones con límites y entre hadas
+- [x] J9. (Extra) Power-ups
+- [x] J10. Tests de puntuación y reglas
 
-### Cómo conectar el gameplay de Jose con lo que ya está hecho
-- **Flores (J3):** `spawnFlowers(this, this.forest, (scene, spawn) => new Flower(scene, spawn))` en `GameScene`. `spawn` trae `id`, `position` y `tone`. Después se puede borrar `src/world/PlaceholderFlower.ts`.
-- **Dibujo:** usa `TextureKeys.fairy(color)`, `TextureKeys.flowerNeutral(tone)`, `TextureKeys.flowerPainted(color)` y `TextureKeys.spellRing` de `src/visuals/AssetRegistry.ts`, con `DEPTH.flowers` y `DEPTH.fairies`.
-- **Límites y colisiones (J2, J8):** `this.forest.bounds`, `this.forest.obstacles` y `collidesWithObstacle()`.
-- **Eventos:** emite `SPELL_CAST`, `FLOWER_PAINTED` y `SCORE_CHANGED`. El HUD, las partículas y el sonido ya los escuchan.
-- **Debug:** en `npm run dev`, la tecla F simula flores pintadas. Desactívalo (`installDebugTools` en `GameScene`) cuando el `ScoreSystem` real funcione.
+### Integración (hecha)
+`GameScene` crea el bosque (Thais), reparte las flores con `planFlowers` evitando obstáculos y las esquinas de salida, y se lo pasa a `Gameplay` (Jose). El HUD, las partículas y el sonido escuchan los eventos que emite el gameplay.
 
 ## Primer hito: partida jugable mínima
 Thais T2–T3 + Jose J1–J5. Luego integramos juntos en `GameScene` (ver los `TODO`).
@@ -54,7 +50,7 @@ Thais T2–T3 + Jose J1–J5. Luego integramos juntos en `GameScene` (ver los `T
 ## Fase 2
 | Tarea | Responsable |
 |---|---|
-| Integrar entidades en `GameScene` | Thais + Jose |
+| ~~Integrar entidades en `GameScene`~~ ✅ | Thais + Jose |
 | Balance | Thais + Jose |
 | IA de hada rival | Jose |
 | Sprites reales | Thais |
