@@ -16,6 +16,10 @@ export class MainMenuScene extends Phaser.Scene {
       .text(cx, cy + 20, 'Pulsa ENTER para empezar', { fontSize: '24px', color: '#cfe8d5' })
       .setOrigin(0.5);
 
+    this.add
+      .text(cx, GAME_HEIGHT - 50, 'M · Silenciar / activar sonido', { fontSize: '18px', color: '#9fc9a8' })
+      .setOrigin(0.5);
+
     this.input.keyboard?.once('keydown-ENTER', () => this.scene.start(SceneKeys.PlayerSelect));
   }
 }
