@@ -28,12 +28,14 @@ npm run build      # typecheck + build de producción
 
 Coge las estrellas que aparecen: **Café de rocío** (más velocidad), **Mega hechizo** (más radio) y **Polvo de hada** (casi sin enfriamiento).
 
+Antes de la partida, cada jugador elige su color con izquierda/derecha y confirma con su tecla de hechizo.
+
 ## Estructura
 ```
 src/
   shared/    Contratos compartidos (config, tipos, eventos). Se cambian solo de común acuerdo.
   scenes/    Escenas del juego              → Thais
-  world/     Bosque, obstáculos, spawner    → Thais
+  world/     Bosque, obstáculos, reparto de flores → Thais
   ui/        HUD, efectos, ranking          → Thais
   visuals/   AssetRegistry (formas → sprites) → Thais
   audio/     Sonidos y música provisionales → Thais
@@ -43,14 +45,7 @@ assets/      Sprites y sonidos              → Thais
 docs/        Plan de tareas y flujo de trabajo
 ```
 
-## Controles
-| | Mover | Hechizo |
-|---|---|---|
-| Jugador 1 | W A S D | Espacio |
-| Jugador 2 | Flechas | Enter |
-| Jugador 3 | I J K L | U |
-| Jugador 4 | Num 8 4 5 6 | Num 0 |
-
+## Otras teclas
 - **ESC / P**: pausa (continuar, reiniciar, terminar, menú)
 - **M**: silenciar o activar el sonido
 
