@@ -160,14 +160,15 @@ export class Fairy implements IFairy {
       .setDepth(LAYER.bubbles)
       .setScale(0.3);
     // Que no se salga de la pantalla cuando el hada está en un borde.
-    const half = bubble.width / 2 + 4;
+    const half = (bubble.width * 1.1) / 2 + 4; // 1.1: rebote de Back.easeOut
     bubble.x = Phaser.Math.Clamp(bubble.x, half, GAME_WIDTH - half);
-    bubble.y = Math.max(bubble.y, bubble.height / 2 + 4);
+    bubble.y = Math.max(bubble.y, (bubble.height * 1.1) / 2 + 4);
+    const rise = Math.min(30, bubble.y - bubble.height / 2 - 4);
     this.bubble = bubble;
     this.scene.tweens.add({ targets: bubble, scale: 1, duration: 220, ease: 'Back.easeOut' });
     this.scene.tweens.add({
       targets: bubble,
-      y: bubble.y - 30,
+      y: bubble.y - rise,
       alpha: 0,
       delay: 700,
       duration: 600,
