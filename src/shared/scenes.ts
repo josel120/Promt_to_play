@@ -4,5 +4,6 @@ export const SceneKeys = {
   MainMenu: 'MainMenu',
   PlayerSelect: 'PlayerSelect',
   Game: 'Game',
+  Pause: 'Pause',
   Results: 'Results',
 } as const;

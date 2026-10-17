@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sfx } from '../audio/Sfx';
 import { DEPTH, GAME_HEIGHT, GAME_WIDTH, MATCH_DURATION_S } from '../shared/config';
 import { GameEvents, gameEvents } from '../shared/events';
 import { SceneKeys } from '../shared/scenes';
@@ -24,6 +25,8 @@ export class GameScene extends Phaser.Scene {
   private timeLeftS = MATCH_DURATION_S;
   private hud!: Hud;
   private ended = false;
+  /** Momento en que se reanudó: evita que la misma tecla que cierra la pausa la vuelva a abrir. */
+  private resumedAt = 0;
   /** Área jugable y obstáculos: `this.forest.bounds`, `this.forest.obstacles`, `this.forest.isFree()`. */
   forest!: Forest;
   flowers: IFlower[] = [];
@@ -71,11 +74,32 @@ export class GameScene extends Phaser.Scene {
       callback: () => {
         this.timeLeftS -= 1;
         this.hud.setTime(this.timeLeftS);
+        if (this.timeLeftS > 0 && this.timeLeftS <= 5) sfx.tick();
         if (this.timeLeftS <= 0) this.endMatch();
       },
     });
 
+    this.input.keyboard?.on('keydown-ESC', () => this.pauseMatch());
+    this.input.keyboard?.on('keydown-P', () => this.pauseMatch());
+
     gameEvents.emit(GameEvents.MATCH_STARTED, { durationS: MATCH_DURATION_S });
+  }
+
+  pauseMatch(): void {
+    if (this.ended || performance.now() - this.resumedAt < 250) return;
+    sfx.pauseMusic();
+    this.scene.launch(SceneKeys.Pause);
+    this.scene.pause();
+  }
+
+  resumeMatch(): void {
+    this.resumedAt = performance.now();
+    sfx.resumeMusic();
+    this.scene.resume();
+  }
+
+  restartMatch(): void {
+    this.scene.restart({ players: this.players } satisfies GameSceneData);
   }
 
   private onScoreChanged({ scores }: { scores: Scores }): void {
