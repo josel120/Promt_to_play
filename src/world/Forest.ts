@@ -9,21 +9,17 @@ import {
   isInsideBounds,
   type ForestLayoutOptions,
 } from './forestLayout';
+import { TextureKeys, TextureSizes } from '../visuals/AssetRegistry';
 
 const COLORS = {
   outside: 0x0d1f14,
   ground: 0x1f4d2b,
   border: 0x143a20,
   grass: 0x2a6338,
-  treeShadow: 0x0a2612,
-  treeCanopy: 0x1b5e2c,
-  treeHighlight: 0x2e7d3e,
-  rock: 0x8a8f93,
-  rockShade: 0x5f6468,
 };
 
 /**
- * Bosque dibujado con formas geométricas (placeholder hasta tener sprites).
+ * Bosque del juego. Árboles y rocas usan las texturas de AssetRegistry (formas hoy, sprites mañana).
  * Expone `bounds` y `obstacles` para el spawner de flores y las colisiones de las hadas.
  */
 export class Forest {
@@ -67,29 +63,21 @@ export class Forest {
   }
 
   private drawTree(scene: Phaser.Scene, o: Obstacle): void {
-    const g = scene.add.graphics().setDepth(DEPTH.obstacles);
-    g.fillStyle(COLORS.treeShadow, 0.6);
-    g.fillCircle(o.x + 4, o.y + 6, o.radius);
-    g.fillStyle(COLORS.treeCanopy, 1);
-    g.fillCircle(o.x, o.y, o.radius);
-    g.fillStyle(COLORS.treeHighlight, 1);
-    g.fillCircle(o.x - o.radius * 0.3, o.y - o.radius * 0.3, o.radius * 0.45);
+    const { bodyRadius, size } = TextureSizes.tree;
+    scene.add
+      .image(o.x, o.y, TextureKeys.tree)
+      .setOrigin(bodyRadius / size)
+      .setScale(o.radius / bodyRadius)
+      .setDepth(DEPTH.obstacles);
   }
 
   private drawRock(scene: Phaser.Scene, o: Obstacle): void {
-    // Polígono irregular estable: usa la posición como semilla.
+    // Rotación estable: usa la posición como semilla para que cada roca se vea distinta.
     const rng = createRng(Math.round(o.x * 31 + o.y));
-    const sides = 6;
-    const points = Array.from({ length: sides }, (_, i) => {
-      const angle = (i / sides) * Math.PI * 2;
-      const r = o.radius * (0.8 + rng() * 0.25);
-      return new Phaser.Math.Vector2(o.x + Math.cos(angle) * r, o.y + Math.sin(angle) * r);
-    });
-
-    const g = scene.add.graphics().setDepth(DEPTH.obstacles);
-    g.fillStyle(COLORS.rockShade, 1);
-    g.fillPoints(points.map((p) => new Phaser.Math.Vector2(p.x + 2, p.y + 3)), true);
-    g.fillStyle(COLORS.rock, 1);
-    g.fillPoints(points, true);
+    scene.add
+      .image(o.x, o.y, TextureKeys.rock)
+      .setScale(o.radius / TextureSizes.rock.bodyRadius)
+      .setRotation(rng() * Math.PI * 2)
+      .setDepth(DEPTH.obstacles);
   }
 }
