@@ -34,12 +34,29 @@ src/
   shared/    Contratos compartidos (config, tipos, eventos). Se cambian solo de común acuerdo.
   scenes/    Escenas del juego              → Thais
   world/     Bosque, obstáculos, spawner    → Thais
-  ui/        HUD, menús                     → Thais
+  ui/        HUD, efectos, ranking          → Thais
+  visuals/   AssetRegistry (formas → sprites) → Thais
+  audio/     Sonidos y música provisionales → Thais
   entities/  Hada, Flor                     → Jose
   systems/   Hechizo, puntuación, reglas    → Jose
 assets/      Sprites y sonidos              → Thais
 docs/        Plan de tareas y flujo de trabajo
 ```
+
+## Controles
+| | Mover | Hechizo |
+|---|---|---|
+| Jugador 1 | W A S D | Espacio |
+| Jugador 2 | Flechas | Enter |
+| Jugador 3 | I J K L | U |
+| Jugador 4 | Num 8 4 5 6 | Num 0 |
+
+- **ESC / P**: pausa (continuar, reiniciar, terminar, menú)
+- **M**: silenciar o activar el sonido
+- **F** (solo en `npm run dev`): simula que un hada pinta una flor
+
+## Cambiar formas por sprites
+Copia el PNG en `assets/sprites/` y añade su clave en `SPRITE_MANIFEST` (`src/visuals/AssetRegistry.ts`). No hace falta tocar nada más.
 
 - Plan y reparto de tareas: [docs/TAREAS.md](docs/TAREAS.md)
 - Flujo de Git (repo principal + fork): [docs/FLUJO_DE_TRABAJO.md](docs/FLUJO_DE_TRABAJO.md)

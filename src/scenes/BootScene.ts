@@ -1,13 +1,18 @@
 import Phaser from 'phaser';
 import { SceneKeys } from '../shared/scenes';
+import { preloadSprites, registerPlaceholderTextures } from '../visuals/AssetRegistry';
 
-// TODO (Thais): cargar aquí los sprites y sonidos cuando reemplacen las formas geométricas.
 export class BootScene extends Phaser.Scene {
   constructor() {
     super(SceneKeys.Boot);
   }
 
+  preload(): void {
+    preloadSprites(this);
+  }
+
   create(): void {
+    registerPlaceholderTextures(this);
     this.scene.start(SceneKeys.MainMenu);
   }
 }

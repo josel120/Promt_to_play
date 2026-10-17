@@ -5,6 +5,8 @@ import { MainMenuScene } from './scenes/MainMenuScene';
 import { PlayerSelectScene } from './scenes/PlayerSelectScene';
 import { GameScene } from './scenes/GameScene';
 import { ResultsScene } from './scenes/ResultsScene';
+import { PauseScene } from './scenes/PauseScene';
+import { sfx } from './audio/Sfx';
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -14,5 +16,12 @@ new Phaser.Game({
   backgroundColor: '#0d1f14',
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   physics: { default: 'arcade', arcade: { debug: false } },
-  scene: [BootScene, MainMenuScene, PlayerSelectScene, GameScene, ResultsScene],
+  scene: [BootScene, MainMenuScene, PlayerSelectScene, GameScene, PauseScene, ResultsScene],
+});
+
+sfx.bindToGameEvents();
+
+// M silencia o reactiva el sonido en cualquier pantalla.
+window.addEventListener('keydown', (event) => {
+  if (event.key.toLowerCase() === 'm' && !event.repeat) sfx.toggleMute();
 });
