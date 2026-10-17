@@ -20,21 +20,20 @@ const KINDS = Object.keys(POWER_UPS) as PowerUpKind[];
 export class PowerUpSystem {
   private readonly states = new Map<PlayerId, PowerUpState>();
   private orbs: Orb[] = [];
-  private nextSpawnAt: number;
+  /** Se fija en el primer update: el reloj de `update(time)` no es el mismo que `scene.time.now`. */
+  private nextSpawnAt?: number;
 
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly findSpot: () => Point | null,
-    now: number,
-  ) {
-    this.nextSpawnAt = now + POWER_UP_SPAWN.everyMs / 2;
-  }
+  ) {}
 
   effects(playerId: PlayerId, now: number): PowerUpEffects {
     return this.states.get(playerId)?.effects(now) ?? NO_EFFECTS;
   }
 
   update(fairies: readonly Fairy[], now: number): void {
+    this.nextSpawnAt ??= now + POWER_UP_SPAWN.everyMs / 2;
     if (now >= this.nextSpawnAt) {
       this.nextSpawnAt = now + POWER_UP_SPAWN.everyMs;
       if (this.orbs.length < POWER_UP_SPAWN.maxOnField) this.spawn(now);

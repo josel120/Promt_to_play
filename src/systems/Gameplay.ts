@@ -42,7 +42,7 @@ export class Gameplay {
     this.flowers = flowerPositions.map((p, i) => new Flower(scene, i, p));
     this.fairies = players.map((p, i) => new Fairy(scene, p, starts[i]));
     this.scores = new ScoreSystem(players.map((p) => p.id));
-    this.powerUps = new PowerUpSystem(scene, () => this.findPowerUpSpot(bounds, obstacles), scene.time.now);
+    this.powerUps = new PowerUpSystem(scene, () => this.findPowerUpSpot(bounds, obstacles));
     this.spells = new SpellSystem(scene, this.flowers, (id, now) => this.powerUps.effects(id, now));
     this.collisions = new CollisionSystem(bounds, obstacles);
 

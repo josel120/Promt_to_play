@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { FAIRY, FAIRY_COLORS, PLAYER_KEYS, type FairyColorName } from '../shared/config';
+import { FAIRY, FAIRY_COLORS, GAME_WIDTH, PLAYER_KEYS, type FairyColorName } from '../shared/config';
 import type { IFairy, PlayerConfig, PlayerId, Point } from '../shared/types';
 import { normalize } from '../systems/geometry';
 import { FUNNY_FONT, LAYER } from '../systems/layers';
@@ -159,6 +159,10 @@ export class Fairy implements IFairy {
       .setOrigin(0.5)
       .setDepth(LAYER.bubbles)
       .setScale(0.3);
+    // Que no se salga de la pantalla cuando el hada está en un borde.
+    const half = bubble.width / 2 + 4;
+    bubble.x = Phaser.Math.Clamp(bubble.x, half, GAME_WIDTH - half);
+    bubble.y = Math.max(bubble.y, bubble.height / 2 + 4);
     this.bubble = bubble;
     this.scene.tweens.add({ targets: bubble, scale: 1, duration: 220, ease: 'Back.easeOut' });
     this.scene.tweens.add({
