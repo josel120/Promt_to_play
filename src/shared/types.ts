@@ -45,3 +45,24 @@ export interface MatchResult {
   /** Vacío si nadie pintó flores; más de un id si hay empate. */
   winners: PlayerId[];
 }
+
+/** Rectángulo en píxeles (esquina superior izquierda + tamaño). */
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export type ObstacleKind = 'tree' | 'rock';
+
+/**
+ * Obstáculo del bosque. Para colisiones se trata como un círculo (x, y, radius).
+ * Lo genera el mundo (Thais) y lo usan el spawner de flores y las colisiones de las hadas (Jose).
+ */
+export interface Obstacle {
+  kind: ObstacleKind;
+  x: number;
+  y: number;
+  radius: number;
+}

@@ -16,7 +16,7 @@ Así cada uno puede avanzar sin esperar al otro.
 Carpetas: `src/scenes/`, `src/world/`, `src/ui/`, `assets/`
 
 - [x] T1. Esqueleto y escenas: Boot, MainMenu, PlayerSelect, Game, Results
-- [ ] T2. Bosque geométrico: fondo, límites, árboles (círculos), rocas (polígonos)
+- [x] T2. Bosque geométrico: fondo, límites, árboles (círculos), rocas (polígonos)
 - [ ] T3. `FlowerSpawner`: flores en posiciones válidas (usa `Flower` de Jose)
 - [ ] T4. Selección de jugadores: cada uno elige su color
 - [ ] T5. HUD: temporizador y marcador por color (escucha `SCORE_CHANGED`)
