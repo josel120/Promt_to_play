@@ -2,8 +2,9 @@ import Phaser from 'phaser';
 import { DEPTH, GAME_HEIGHT, GAME_WIDTH, MATCH_DURATION_S } from '../shared/config';
 import { GameEvents, gameEvents } from '../shared/events';
 import { SceneKeys } from '../shared/scenes';
-import type { MatchResult, PlayerConfig, Scores } from '../shared/types';
+import type { IFlower, MatchResult, PlayerConfig, Scores } from '../shared/types';
 import { Forest } from '../world/Forest';
+import { spawnFlowers } from '../world/FlowerSpawner';
 
 export interface GameSceneData {
   players: PlayerConfig[];
@@ -21,6 +22,7 @@ export class GameScene extends Phaser.Scene {
   private timerText!: Phaser.GameObjects.Text;
   /** Área jugable y obstáculos: `this.forest.bounds`, `this.forest.obstacles`, `this.forest.isFree()`. */
   forest!: Forest;
+  flowers: IFlower[] = [];
 
   constructor() {
     super(SceneKeys.Game);
@@ -35,7 +37,8 @@ export class GameScene extends Phaser.Scene {
   create(): void {
     this.forest = new Forest(this);
 
-    // TODO (Thais): FlowerSpawner, que crea las flores usando la clase Flower de Jose.
+    // TODO (Jose): cuando exista Flower, pasar su fábrica: spawnFlowers(this, this.forest, (scene, s) => new Flower(scene, s)).
+    this.flowers = spawnFlowers(this, this.forest);
     // TODO (Jose): crear un Fairy por cada jugador de this.players.
     //   Usar this.forest.bounds para los límites y this.forest.obstacles para las colisiones.
 
