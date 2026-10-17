@@ -3,6 +3,7 @@ import { GAME_HEIGHT, GAME_WIDTH, MATCH_DURATION_S } from '../shared/config';
 import { GameEvents, gameEvents } from '../shared/events';
 import { SceneKeys } from '../shared/scenes';
 import type { MatchResult, PlayerConfig, Scores } from '../shared/types';
+import { Gameplay } from '../systems/Gameplay';
 
 export interface GameSceneData {
   players: PlayerConfig[];
@@ -18,6 +19,7 @@ export class GameScene extends Phaser.Scene {
   private scores: Scores = {};
   private timeLeftS = MATCH_DURATION_S;
   private timerText!: Phaser.GameObjects.Text;
+  private gameplay?: Gameplay;
 
   constructor() {
     super(SceneKeys.Game);
@@ -34,15 +36,21 @@ export class GameScene extends Phaser.Scene {
     this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH - 40, GAME_HEIGHT - 40, 0x1f4d2b);
 
     // TODO (Thais): FlowerSpawner, que crea las flores usando la clase Flower de Jose.
-    // TODO (Jose): crear un Fairy por cada jugador de this.players.
+    // Cuando llegue el bosque: bounds: this.forest.bounds, obstacles: this.forest.obstacles.
+    this.gameplay = new Gameplay(this, {
+      players: this.players,
+      bounds: { x: 20, y: 60, width: GAME_WIDTH - 40, height: GAME_HEIGHT - 80 },
+    });
 
-    this.add
+    const intro = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, `Partida con ${this.players.length} hadas\nESC para terminar`, {
         fontSize: '28px',
         color: '#ffffff',
         align: 'center',
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(100);
+    this.tweens.add({ targets: intro, alpha: 0, delay: 1500, duration: 600, onComplete: () => intro.destroy() });
 
     // TODO (Thais): mover a un HUD en src/ui.
     this.timerText = this.add.text(GAME_WIDTH / 2, 30, '', { fontSize: '28px', color: '#ffffff' }).setOrigin(0.5);
@@ -51,6 +59,8 @@ export class GameScene extends Phaser.Scene {
     gameEvents.on(GameEvents.SCORE_CHANGED, this.onScoreChanged, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       gameEvents.off(GameEvents.SCORE_CHANGED, this.onScoreChanged, this);
+      this.gameplay?.destroy();
+      this.gameplay = undefined;
     });
 
     this.time.addEvent({
@@ -66,6 +76,10 @@ export class GameScene extends Phaser.Scene {
     this.input.keyboard?.once('keydown-ESC', () => this.endMatch());
 
     gameEvents.emit(GameEvents.MATCH_STARTED, { durationS: MATCH_DURATION_S });
+  }
+
+  update(time: number, delta: number): void {
+    this.gameplay?.update(time, delta);
   }
 
   private onScoreChanged({ scores }: { scores: Scores }): void {
