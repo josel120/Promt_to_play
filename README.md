@@ -53,7 +53,6 @@ docs/        Plan de tareas y flujo de trabajo
 
 - **ESC / P**: pausa (continuar, reiniciar, terminar, menú)
 - **M**: silenciar o activar el sonido
-- **F** (solo en `npm run dev`): simula que un hada pinta una flor
 
 ## Cambiar formas por sprites
 Copia el PNG en `assets/sprites/` y añade su clave en `SPRITE_MANIFEST` (`src/visuals/AssetRegistry.ts`). No hace falta tocar nada más.

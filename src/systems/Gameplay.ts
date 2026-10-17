@@ -17,7 +17,7 @@ export interface GameplayOptions {
   bounds: Bounds;
   /** Árboles y rocas (p. ej. `forest.obstacles`). */
   obstacles?: Circle[];
-  /** Dónde poner las flores (lo dará el FlowerSpawner de Thais). Si falta, se reparten al azar. */
+  /** Dónde poner las flores (GameScene se las pasa desde planFlowers). Si falta, se reparten al azar. */
   flowerPositions?: Point[];
 }
 
