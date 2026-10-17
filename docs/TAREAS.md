@@ -30,16 +30,16 @@ Carpetas: `src/scenes/`, `src/world/`, `src/ui/`, `assets/`
 ## 🧚‍♂️ Jose: Gameplay
 Carpetas: `src/entities/`, `src/systems/`
 
-- [ ] J1. `Fairy` (implementa `IFairy`): círculo del color del hada con alas triangulares
-- [ ] J2. Movimiento por jugador usando `PLAYER_KEYS`
-- [ ] J3. `Flower` (implementa `IFlower`): estados neutral (blanca/gris) y pintada
-- [ ] J4. Hechizo: área `SPELL.radius`, cooldown `SPELL.cooldownMs`, emite `SPELL_CAST`
-- [ ] J5. Pintar flores en el área, emite `FLOWER_PAINTED`
-- [ ] J6. Repintado y protección temporal (`FLOWER.protectionMs`)
-- [ ] J7. `ScoreSystem`: emite `SCORE_CHANGED`
-- [ ] J8. Colisiones con límites y entre hadas
-- [ ] J9. (Extra) Power-ups
-- [ ] J10. Tests de puntuación y reglas
+- [x] J1. `Fairy` (implementa `IFairy`): círculo del color del hada con alas triangulares
+- [x] J2. Movimiento por jugador usando `PLAYER_KEYS`
+- [x] J3. `Flower` (implementa `IFlower`): estados neutral (blanca/gris) y pintada
+- [x] J4. Hechizo: área `SPELL.radius`, cooldown `SPELL.cooldownMs`, emite `SPELL_CAST`
+- [x] J5. Pintar flores en el área, emite `FLOWER_PAINTED`
+- [x] J6. Repintado y protección temporal (`FLOWER.protectionMs`)
+- [x] J7. `ScoreSystem`: emite `SCORE_CHANGED`
+- [x] J8. Colisiones con límites y entre hadas
+- [x] J9. (Extra) Power-ups
+- [x] J10. Tests de puntuación y reglas
 
 ## Primer hito: partida jugable mínima
 Thais T2–T3 + Jose J1–J5. Luego integramos juntos en `GameScene` (ver los `TODO`).
