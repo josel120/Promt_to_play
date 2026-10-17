@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH, MATCH_DURATION_S } from '../shared/config';
+import { DEPTH, GAME_HEIGHT, GAME_WIDTH, MATCH_DURATION_S } from '../shared/config';
 import { GameEvents, gameEvents } from '../shared/events';
 import { SceneKeys } from '../shared/scenes';
 import type { MatchResult, PlayerConfig, Scores } from '../shared/types';
+import { Forest } from '../world/Forest';
 
 export interface GameSceneData {
   players: PlayerConfig[];
@@ -18,6 +19,8 @@ export class GameScene extends Phaser.Scene {
   private scores: Scores = {};
   private timeLeftS = MATCH_DURATION_S;
   private timerText!: Phaser.GameObjects.Text;
+  /** Área jugable y obstáculos: `this.forest.bounds`, `this.forest.obstacles`, `this.forest.isFree()`. */
+  forest!: Forest;
 
   constructor() {
     super(SceneKeys.Game);
@@ -30,11 +33,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-    // TODO (Thais): reemplazar por el bosque de src/world (fondo, límites, árboles, rocas).
-    this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH - 40, GAME_HEIGHT - 40, 0x1f4d2b);
+    this.forest = new Forest(this);
 
     // TODO (Thais): FlowerSpawner, que crea las flores usando la clase Flower de Jose.
     // TODO (Jose): crear un Fairy por cada jugador de this.players.
+    //   Usar this.forest.bounds para los límites y this.forest.obstacles para las colisiones.
 
     this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, `Partida con ${this.players.length} hadas\nESC para terminar`, {
@@ -42,10 +45,15 @@ export class GameScene extends Phaser.Scene {
         color: '#ffffff',
         align: 'center',
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(DEPTH.ui)
+      .setAlpha(0.6);
 
     // TODO (Thais): mover a un HUD en src/ui.
-    this.timerText = this.add.text(GAME_WIDTH / 2, 30, '', { fontSize: '28px', color: '#ffffff' }).setOrigin(0.5);
+    this.timerText = this.add
+      .text(GAME_WIDTH / 2, 38, '', { fontSize: '28px', color: '#ffffff' })
+      .setOrigin(0.5)
+      .setDepth(DEPTH.ui);
     this.updateTimerText();
 
     gameEvents.on(GameEvents.SCORE_CHANGED, this.onScoreChanged, this);
