@@ -30,8 +30,8 @@ describe('power-ups', () => {
     s.activate('polvoDeHada', 0);
     expect(s.active(100).sort()).toEqual(['megaHechizo', 'polvoDeHada']);
     const e = s.effects(100);
-    expect(e.spellRadiusMultiplier).toBe(1.8);
-    expect(e.cooldownMultiplier).toBe(0.35);
+    expect(e.spellRadiusMultiplier).toBe(POWER_UPS.megaHechizo.effects.spellRadiusMultiplier);
+    expect(e.cooldownMultiplier).toBe(POWER_UPS.polvoDeHada.effects.cooldownMultiplier);
     expect(e.speedMultiplier).toBe(1);
   });
 

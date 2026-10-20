@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { FAIRY, FLOWER, SPELL } from '../shared/config';
-import type { PlayerConfig, Point } from '../shared/types';
+import type { MatchResult, PlayerConfig, Point } from '../shared/types';
 import { Fairy } from '../entities/Fairy';
 import { Flower } from '../entities/Flower';
 import { CollisionSystem } from './CollisionSystem';
@@ -11,6 +11,9 @@ import { pickQuip } from './quips';
 import { RivalController } from './RivalController';
 import { ScoreSystem } from './ScoreSystem';
 import { SpellSystem } from './SpellSystem';
+import { GuestLink } from '../net/GuestLink';
+import { HostLink } from '../net/HostLink';
+import type { OnlineMatch } from '../net/online';
 
 export interface GameplayOptions {
   players: PlayerConfig[];
@@ -20,6 +23,12 @@ export interface GameplayOptions {
   obstacles?: Circle[];
   /** Dónde poner las flores (GameScene se las pasa desde planFlowers). Si falta, se reparten al azar. */
   flowerPositions?: Point[];
+  /** Partida online: el host simula y los invitados solo dibujan (src/net). */
+  online?: OnlineMatch;
+  /** Invitado: el host terminó la partida. */
+  onOnlineOver?: (result: MatchResult) => void;
+  /** Invitado: se cerró la sala. */
+  onOnlineClosed?: () => void;
 }
 
 /** Punto de entrada del gameplay de Jose: crea hadas y flores y mueve todos los sistemas. */
@@ -30,6 +39,10 @@ export class Gameplay {
   private readonly spells: SpellSystem;
   private readonly collisions: CollisionSystem;
   private readonly powerUps: PowerUpSystem;
+  private readonly host?: HostLink;
+  private readonly guest?: GuestLink;
+  /** Reloj de `update(time)`, el mismo que usan los power-ups. */
+  private now = 0;
 
   constructor(scene: Phaser.Scene, options: GameplayOptions) {
     const { players, bounds, obstacles = [] } = options;
@@ -48,7 +61,7 @@ export class Gameplay {
     this.collisions = new CollisionSystem(bounds, obstacles);
 
     players.forEach((p, i) => {
-      if (!p.cpu) return;
+      if (!p.cpu || options.online?.role === 'guest') return;
       const fairy = this.fairies[i];
       fairy.useControls(
         new RivalController(fairy, {
@@ -62,19 +75,43 @@ export class Gameplay {
       );
     });
 
-    this.fairies.forEach((f, i) => scene.time.delayedCall(300 + i * 250, () => f.say(pickQuip('start'))));
+    const online = options.online;
+    if (online?.role === 'host') {
+      const radiusOf = (id: number) => SPELL.radius * this.powerUps.effects(id, this.now).spellRadiusMultiplier;
+      this.host = new HostLink(online, this.fairies, () => this.powerUps.positions(), radiusOf, players, flowerPositions);
+    } else if (online?.role === 'guest') {
+      this.guest = new GuestLink(scene, online, this.fairies, this.flowers, (at, r, c) => this.spells.drawSpell(at.x, at.y, r, c), {
+        onOver: (result) => options.onOnlineOver?.(result),
+        onClosed: () => options.onOnlineClosed?.(),
+      });
+    }
+
+    // En los invitados las frases llegan del host.
+    if (online?.role !== 'guest') {
+      this.fairies.forEach((f, i) => scene.time.delayedCall(300 + i * 250, () => f.say(pickQuip('start'))));
+    }
   }
 
   update(time: number, delta: number): void {
+    this.now = time;
+    if (this.guest) {
+      this.guest.update(time);
+      this.fairies.forEach((f) => f.update(time, delta));
+      this.guest.correct();
+      return;
+    }
     for (const fairy of this.fairies) {
       fairy.update(time, delta);
       if (fairy.wantsToCast()) this.spells.tryCast(fairy, time);
     }
     this.collisions.resolve(this.fairies, time);
     this.powerUps.update(this.fairies, time);
+    this.host?.update(time);
   }
 
   destroy(): void {
+    this.host?.destroy();
+    this.guest?.destroy();
     this.scores.destroy();
     this.powerUps.destroy();
     this.fairies.forEach((f) => f.destroy());

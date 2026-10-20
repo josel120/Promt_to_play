@@ -4,6 +4,7 @@ import { FAIRY, MATCH_DURATION_S } from '../shared/config';
 import { GameEvents, gameEvents } from '../shared/events';
 import { SceneKeys } from '../shared/scenes';
 import type { IFlower, MatchResult, PlayerConfig, Scores } from '../shared/types';
+import type { OnlineMatch } from '../net/online';
 import { Gameplay, startPositions } from '../systems/Gameplay';
 import { FlowerPaintEffects } from '../ui/FlowerPaintEffects';
 import { Hud } from '../ui/Hud';
@@ -12,6 +13,8 @@ import { planFlowers } from '../world/flowerPlacement';
 
 export interface GameSceneData {
   players: PlayerConfig[];
+  /** Partida online (ver src/net/devLaunch.ts). */
+  online?: OnlineMatch;
 }
 
 /**
@@ -26,6 +29,7 @@ export class GameScene extends Phaser.Scene {
   private hud!: Hud;
   private gameplay?: Gameplay;
   private ended = false;
+  private online?: OnlineMatch;
   /** Momento en que se reanudó: evita que la misma tecla que cierra la pausa la vuelva a abrir. */
   private resumedAt = 0;
   /** Área jugable y obstáculos: `this.forest.bounds`, `this.forest.obstacles`, `this.forest.isFree()`. */
@@ -41,6 +45,7 @@ export class GameScene extends Phaser.Scene {
     this.scores = Object.fromEntries(this.players.map((p) => [p.id, 0]));
     this.timeLeftS = MATCH_DURATION_S;
     this.ended = false;
+    this.online = data.online;
   }
 
   create(): void {
@@ -48,7 +53,7 @@ export class GameScene extends Phaser.Scene {
 
     // Las flores no salen encima de los obstáculos ni en las esquinas donde empiezan las hadas.
     const starts = startPositions(this.forest.bounds, this.players.length);
-    const flowerPositions = planFlowers(
+    const flowerPositions = this.online?.flowerPositions ?? planFlowers(
       this.forest.bounds,
       (p, radius) =>
         this.forest.isFree(p, radius, 6) && starts.every((s) => Math.hypot(s.x - p.x, s.y - p.y) > FAIRY.radius * 3),
@@ -59,6 +64,9 @@ export class GameScene extends Phaser.Scene {
       bounds: this.forest.bounds,
       obstacles: [...this.forest.obstacles],
       flowerPositions,
+      online: this.online,
+      onOnlineOver: (result) => this.endMatch(result),
+      onOnlineClosed: () => this.scene.start(SceneKeys.MainMenu),
     });
     this.flowers = this.gameplay.flowers;
 
@@ -71,6 +79,7 @@ export class GameScene extends Phaser.Scene {
       gameEvents.off(GameEvents.SCORE_CHANGED, this.onScoreChanged, this);
       this.gameplay?.destroy();
       this.gameplay = undefined;
+      this.online?.client.close();
     });
 
     this.time.addEvent({
@@ -95,7 +104,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   pauseMatch(): void {
-    if (this.ended || performance.now() - this.resumedAt < 250) return;
+    if (this.online || this.ended || performance.now() - this.resumedAt < 250) return;
     sfx.pauseMusic();
     this.scene.launch(SceneKeys.Pause);
     this.scene.pause();
@@ -115,12 +124,13 @@ export class GameScene extends Phaser.Scene {
     this.scores = scores;
   }
 
-  endMatch(): void {
-    if (this.ended) return;
+  /** En online, los invitados solo terminan cuando el host les manda su resultado. */
+  endMatch(hostResult?: MatchResult): void {
+    if (this.ended || (this.online?.role === 'guest' && !hostResult)) return;
     this.ended = true;
     const best = Math.max(0, ...Object.values(this.scores));
     const winners = best === 0 ? [] : this.players.filter((p) => this.scores[p.id] === best).map((p) => p.id);
-    const result: MatchResult = { scores: this.scores, players: this.players, winners };
+    const result: MatchResult = hostResult ?? { scores: this.scores, players: this.players, winners };
     gameEvents.emit(GameEvents.GAME_OVER, result);
     this.scene.start(SceneKeys.Results, result);
   }
