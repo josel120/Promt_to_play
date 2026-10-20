@@ -9,7 +9,7 @@ Así cada uno puede avanzar sin esperar al otro.
 ## Fase 0: Acuerdos (juntos)
 - [x] Motor: Phaser 3 + TypeScript + Vite
 - [x] Contratos en `src/shared/` (`config.ts`, `types.ts`, `events.ts`, `scenes.ts`)
-- [ ] Revisar y ajustar las reglas: duración, repintado, máximo de jugadores, empate
+- [x] Revisar y ajustar las reglas: duración 90 s, repintado con protección de 2 s, máx. 4 (= colores), empate compartido
 - [ ] Jose: hacer fork y sincronizarlo (ver `docs/FLUJO_DE_TRABAJO.md`)
 
 ## 🧚 Thais: Mundo, UI y flujo
@@ -54,7 +54,7 @@ Thais T2–T3 + Jose J1–J5. Luego integramos juntos en `GameScene` (ver los `T
 | Tarea | Responsable |
 |---|---|
 | ~~Integrar entidades en `GameScene`~~ ✅ | Thais + Jose |
-| Balance | Thais + Jose |
+| ~~Balance~~ ✅ protección de repintado 2 s | Thais + Jose |
 | ~~IA de hada rival~~ ✅ (J11) | Jose |
 | Sprites reales | Thais |
 | ~~Multijugador online: red/servidor~~ ✅ (J12) | Jose |
