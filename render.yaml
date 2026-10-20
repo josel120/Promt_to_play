@@ -1,0 +1,9 @@
+# Servidor online en Render (plan gratis): New > Blueprint > este repo.
+services:
+  - type: web
+    name: hadas-del-bosque-relay
+    runtime: node
+    plan: free
+    buildCommand: npm ci --omit=dev
+    startCommand: npm run server
+    healthCheckPath: /
