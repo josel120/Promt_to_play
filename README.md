@@ -54,3 +54,7 @@ Copia el PNG en `assets/sprites/` y añade su clave en `SPRITE_MANIFEST` (`src/v
 
 - Plan y reparto de tareas: [docs/TAREAS.md](docs/TAREAS.md)
 - Flujo de Git (repo principal + fork): [docs/FLUJO_DE_TRABAJO.md](docs/FLUJO_DE_TRABAJO.md)
+
+## Despliegue
+Cada push a `main` corre tests, compila y publica en GitHub Pages (workflow `deploy.yml`):
+**https://thaisrodriguez.github.io/Promt_to_play/**
