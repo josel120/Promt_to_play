@@ -6,6 +6,7 @@ import { PlayerSelectScene } from './scenes/PlayerSelectScene';
 import { GameScene } from './scenes/GameScene';
 import { ResultsScene } from './scenes/ResultsScene';
 import { PauseScene } from './scenes/PauseScene';
+import { LobbyScene } from './scenes/LobbyScene';
 import { sfx } from './audio/Sfx';
 import { launchOnlineFromUrl } from './net/devLaunch';
 
@@ -17,7 +18,7 @@ const game = new Phaser.Game({
   backgroundColor: '#0d1f14',
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   physics: { default: 'arcade', arcade: { debug: false } },
-  scene: [BootScene, MainMenuScene, PlayerSelectScene, GameScene, PauseScene, ResultsScene],
+  scene: [BootScene, MainMenuScene, PlayerSelectScene, LobbyScene, GameScene, PauseScene, ResultsScene],
 });
 
 sfx.bindToGameEvents();
