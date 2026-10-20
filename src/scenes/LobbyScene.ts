@@ -4,6 +4,7 @@ import type { LobbyProvider, LobbyRoom } from '../shared/lobby';
 import { SceneKeys } from '../shared/scenes';
 import type { PlayerConfig } from '../shared/types';
 import { MockLobbyProvider } from '../ui/lobby/MockLobbyProvider';
+import { NetLobbyProvider } from '../ui/lobby/NetLobbyProvider';
 import { TextureKeys } from '../visuals/AssetRegistry';
 
 type Step = 'menu' | 'join' | 'room';
@@ -12,9 +13,9 @@ const COLOR_NAMES = Object.keys(FAIRY_COLORS) as FairyColorName[];
 const CODE_LENGTH = 4;
 
 /**
- * Lobby del multijugador online: crear sala, unirse con código, marcarse listo
- * y que el host arranque. Habla con la red solo a través del contrato LobbyProvider
- * (src/shared/lobby.ts); hoy usa MockLobbyProvider, que simula la sala en local.
+ * Lobby del multijugador online: crear sala, unirse con código y que el host arranque.
+ * Habla con la red solo a través del contrato LobbyProvider (src/shared/lobby.ts):
+ * NetLobbyProvider con el servidor real (`npm run server`) o MockLobbyProvider como demo local.
  */
 export class LobbyScene extends Phaser.Scene {
   private provider: LobbyProvider = new MockLobbyProvider();
@@ -22,6 +23,7 @@ export class LobbyScene extends Phaser.Scene {
   private room?: LobbyRoom;
   private typedCode = '';
   private joinError = '';
+  private menuNote = '';
   private starting = false;
   private drawn: Phaser.GameObjects.GameObject[] = [];
 
@@ -34,17 +36,34 @@ export class LobbyScene extends Phaser.Scene {
     this.room = undefined;
     this.typedCode = '';
     this.joinError = '';
+    this.menuNote = '';
     this.starting = false;
 
-    this.provider.onUpdate((room) => {
-      this.room = room;
-      if (this.step === 'room') this.render();
-    });
-    this.provider.onStart((room) => this.startGame(room));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.provider.leaveRoom());
     this.input.keyboard?.on('keydown', this.onKey, this);
 
     this.render();
+  }
+
+  /** Enchufa la escena a un provider nuevo (mock local o red real). */
+  private useProvider(provider: LobbyProvider): void {
+    this.provider.leaveRoom();
+    this.provider = provider;
+    provider.onUpdate((room) => {
+      this.room = room;
+      if (this.step === 'room') this.render();
+    });
+    provider.onStart((room) => this.startGame(room));
+    provider.onClosed?.(() => {
+      this.menuNote = 'La sala se cerró';
+      this.room = undefined;
+      this.step = 'menu';
+      this.render();
+    });
+  }
+
+  private get isNet(): boolean {
+    return this.provider instanceof NetLobbyProvider;
   }
 
   private render(): void {
@@ -69,9 +88,11 @@ export class LobbyScene extends Phaser.Scene {
 
   private renderMenu(): void {
     const cx = GAME_WIDTH / 2;
-    this.text(cx, 220, 'Multijugador online', { fontSize: '44px', color: '#ffffff' });
-    this.text(cx, 330, 'C · Crear una sala', { fontSize: '30px', color: '#cfe8d5' });
-    this.text(cx, 385, 'U · Unirse con código', { fontSize: '30px', color: '#cfe8d5' });
+    this.text(cx, 210, 'Multijugador online', { fontSize: '44px', color: '#ffffff' });
+    this.text(cx, 315, 'C · Crear una sala', { fontSize: '30px', color: '#cfe8d5' });
+    this.text(cx, 370, 'U · Unirse con código', { fontSize: '30px', color: '#cfe8d5' });
+    this.text(cx, 425, 'D · Demo local (sin servidor)', { fontSize: '24px', color: '#9fc9a8' });
+    if (this.menuNote) this.text(cx, 490, this.menuNote, { fontSize: '20px', color: '#ff8a8a' });
     this.text(cx, GAME_HEIGHT - 50, 'ESC · Volver al menú', { fontSize: '18px', color: '#9fc9a8' });
   }
 
@@ -140,17 +161,23 @@ export class LobbyScene extends Phaser.Scene {
     }
 
     const hints: string[] = [];
-    if (me && !me.ready) hints.push('← → color · ESPACIO lista');
-    else if (me) hints.push('ESPACIO · deshacer lista');
-    if (me?.host && this.canStart(room)) hints.push('ENTER · empezar partida');
+    if (this.isNet) {
+      hints.push(me?.host ? (this.canStart(room) ? 'ENTER · empezar partida' : 'Esperando hadas…') : 'Esperando a que el host empiece…');
+    } else {
+      if (me && !me.ready) hints.push('← → color · ESPACIO lista');
+      else if (me) hints.push('ESPACIO · deshacer lista');
+      if (me?.host && this.canStart(room)) hints.push('ENTER · empezar partida');
+    }
     this.text(cx, GAME_HEIGHT - 110, hints.join('    ·    ') || 'Esperando a las demás hadas…', {
       fontSize: '20px',
       color: '#cfe8d5',
     });
-    this.text(cx, GAME_HEIGHT - 70, 'Demo local: las hadas remotas las controla la IA hasta que llegue la red', {
-      fontSize: '16px',
-      color: '#9fc9a8',
-    });
+    if (!this.isNet) {
+      this.text(cx, GAME_HEIGHT - 70, 'Demo local: las hadas remotas las controla la IA', {
+        fontSize: '16px',
+        color: '#9fc9a8',
+      });
+    }
     this.text(cx, GAME_HEIGHT - 40, 'ESC · Salir de la sala', { fontSize: '18px', color: '#9fc9a8' });
   }
 
@@ -174,13 +201,22 @@ export class LobbyScene extends Phaser.Scene {
       this.scene.start(SceneKeys.MainMenu);
       return;
     }
-    if (key === 'c') {
-      this.provider.createRoom('Tú').then((room) => {
-        this.room = room;
-        this.step = 'room';
-        this.render();
-      });
+    if (key === 'c' || key === 'd') {
+      this.useProvider(key === 'd' ? new MockLobbyProvider() : new NetLobbyProvider());
+      this.menuNote = '';
+      this.provider.createRoom('Tú').then(
+        (room) => {
+          this.room = room;
+          this.step = 'room';
+          this.render();
+        },
+        () => {
+          this.menuNote = 'No hay servidor online. Arráncalo con: npm run server';
+          this.render();
+        },
+      );
     } else if (key === 'u') {
+      this.useProvider(new NetLobbyProvider());
       this.step = 'join';
       this.typedCode = '';
       this.joinError = '';
@@ -228,12 +264,16 @@ export class LobbyScene extends Phaser.Scene {
     const me = this.room?.players.find((p) => p.local);
     if (!me) return;
 
+    if (event.key === 'Enter' && me.host && this.room && this.canStart(this.room)) {
+      this.provider.requestStart();
+      return;
+    }
+    // En la red real no hay ready ni elección de color: solo la demo local las usa.
+    if (this.isNet) return;
     if (event.key === ' ' || event.code === 'Space') {
       this.provider.setReady(!me.ready);
     } else if (!me.ready && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
       this.cycleColor(me.color, event.key === 'ArrowRight' ? 1 : -1);
-    } else if (event.key === 'Enter' && me.host && this.room && this.canStart(this.room)) {
-      this.provider.requestStart();
     }
   }
 
@@ -253,7 +293,11 @@ export class LobbyScene extends Phaser.Scene {
 
   private startGame(room: LobbyRoom): void {
     this.starting = true;
-    // La red todavía no existe: las hadas remotas juegan como CPU de momento.
+    if (this.isNet) {
+      this.scene.start(SceneKeys.Game, (this.provider as NetLobbyProvider).gameData());
+      return;
+    }
+    // Demo local: las hadas remotas juegan como CPU.
     const players: PlayerConfig[] = room.players.map((p, id) => ({
       id,
       color: p.color ?? COLOR_NAMES[id % COLOR_NAMES.length],

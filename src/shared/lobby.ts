@@ -37,4 +37,6 @@ export interface LobbyProvider {
   onUpdate(fn: (room: LobbyRoom) => void): void;
   /** El host confirmó y el servidor dio el visto bueno: todos a la partida. */
   onStart(fn: (room: LobbyRoom) => void): void;
+  /** Se cerró la sala (el host se fue o se perdió la conexión). */
+  onClosed?(fn: () => void): void;
 }

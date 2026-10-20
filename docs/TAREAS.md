@@ -58,5 +58,5 @@ Thais T2–T3 + Jose J1–J5. Luego integramos juntos en `GameScene` (ver los `T
 | ~~IA de hada rival~~ ✅ (J11) | Jose |
 | Sprites reales | Thais |
 | ~~Multijugador online: red/servidor~~ ✅ (J12) | Jose |
-| Multijugador online: lobby/UI | Thais |
-| Build y despliegue | Thais |
+| ~~Multijugador online: lobby/UI~~ ✅ `LobbyScene` + `NetLobbyProvider` | Thais |
+| ~~Build y despliegue~~ ✅ GitHub Pages | Thais |
