@@ -62,7 +62,7 @@ export class SpellSystem {
   }
 
   /** Onda mágica: anillo que se expande y un puñado de estrellitas. */
-  private drawSpell(x: number, y: number, radius: number, color: number): void {
+  drawSpell(x: number, y: number, radius: number, color: number): void {
     const ring = this.scene.add.circle(x, y, radius).setStrokeStyle(4, color, 1).setDepth(LAYER.effects).setScale(0.2);
     const fill = this.scene.add.circle(x, y, radius, color, 0.2).setDepth(LAYER.effects).setScale(0.2);
     this.scene.tweens.add({

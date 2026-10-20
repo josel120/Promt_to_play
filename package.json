@@ -9,10 +9,12 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "server": "node server/relay.mjs"
   },
   "dependencies": {
-    "phaser": "3.90.0"
+    "phaser": "3.90.0",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "typescript": "5.9.3",
