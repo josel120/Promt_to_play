@@ -7,8 +7,9 @@ import { GameScene } from './scenes/GameScene';
 import { ResultsScene } from './scenes/ResultsScene';
 import { PauseScene } from './scenes/PauseScene';
 import { sfx } from './audio/Sfx';
+import { launchOnlineFromUrl } from './net/devLaunch';
 
-new Phaser.Game({
+const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
   width: GAME_WIDTH,
@@ -20,6 +21,7 @@ new Phaser.Game({
 });
 
 sfx.bindToGameEvents();
+launchOnlineFromUrl(game);
 
 // M silencia o reactiva el sonido en cualquier pantalla.
 window.addEventListener('keydown', (event) => {
