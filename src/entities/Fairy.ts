@@ -46,6 +46,8 @@ export class Fairy implements IFairy {
   readonly radius = FAIRY.radius;
   /** Lo ajustan los power-ups (Café de rocío). */
   speedMultiplier = 1;
+  /** Se llama cada vez que el hada dice algo (el host lo reenvía a los invitados). */
+  onSay?: (text: string) => void;
 
   private readonly scene: Phaser.Scene;
   private controls?: FairyControls;
@@ -167,6 +169,10 @@ export class Fairy implements IFairy {
     }
   }
 
+  get isBoosted(): boolean {
+    return this.boosted;
+  }
+
   /** Activa el modo "con power-up": aura más grande y estela continua. */
   setBoosted(boosted: boolean): void {
     if (boosted === this.boosted) return;
@@ -176,6 +182,7 @@ export class Fairy implements IFairy {
 
   /** Bocadillo con una frase graciosa que sube y se desvanece. */
   say(text: string): void {
+    this.onSay?.(text);
     this.bubble?.destroy();
     const bubble = this.scene.add
       .text(this.pos.x, this.pos.y - this.radius * 2.6, text, {

@@ -30,6 +30,16 @@ Coge las estrellas que aparecen: **Café de rocío** (más velocidad), **Mega he
 
 Antes de la partida eliges cuántas hadas humanas juegan (1–4) y cuántas hadas CPU rivales se suman. Con 1 humana hay al menos una CPU. Cada jugador elige su color con izquierda/derecha y confirma con su tecla de hechizo. El primero en elegir un color se lo queda; las CPU reciben los que sobran.
 
+## Multijugador online (J12)
+```bash
+npm run server     # servidor de salas en ws://localhost:8787
+npm run dev        # Vite reenvía /net al servidor
+```
+- Host: abre `http://localhost:5173/?online=host` y comparte el enlace de la sala.
+- Invitados: `http://localhost:5173/?online=ABCD` (máximo 4 hadas). Todos juegan con WASD + Espacio.
+- El host simula la partida; los invitados mandan sus teclas y dibujan lo que reciben (`src/net/`).
+- `?server=wss://...` usa otro servidor. El lobby con botones de verdad es de Thais; por ahora es un cartel provisional.
+
 ## Estructura
 ```
 src/
@@ -54,3 +64,7 @@ Copia el PNG en `assets/sprites/` y añade su clave en `SPRITE_MANIFEST` (`src/v
 
 - Plan y reparto de tareas: [docs/TAREAS.md](docs/TAREAS.md)
 - Flujo de Git (repo principal + fork): [docs/FLUJO_DE_TRABAJO.md](docs/FLUJO_DE_TRABAJO.md)
+
+## Despliegue
+Cada push a `main` corre tests, compila y publica en GitHub Pages (workflow `deploy.yml`):
+**https://thaisrodriguez.github.io/Promt_to_play/**
