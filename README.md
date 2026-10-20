@@ -28,7 +28,7 @@ npm run build      # typecheck + build de producción
 
 Coge las estrellas que aparecen: **Café de rocío** (más velocidad), **Mega hechizo** (más radio) y **Polvo de hada** (casi sin enfriamiento).
 
-Antes de la partida, cada jugador elige su color con izquierda/derecha y confirma con su tecla de hechizo.
+Antes de la partida eliges cuántas hadas humanas juegan (1–4) y cuántas hadas CPU rivales se suman. Con 1 humana hay al menos una CPU. Cada jugador elige su color con izquierda/derecha y confirma con su tecla de hechizo.
 
 ## Estructura
 ```
@@ -40,7 +40,7 @@ src/
   visuals/   AssetRegistry (formas → sprites) → Thais
   audio/     Sonidos y música provisionales → Thais
   entities/  Hada, Flor                     → Jose
-  systems/   Hechizo, puntuación, reglas    → Jose
+  systems/   Hechizo, puntuación, reglas, IA rival → Jose
 assets/      Sprites y sonidos              → Thais
 docs/        Plan de tareas y flujo de trabajo
 ```

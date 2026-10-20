@@ -32,6 +32,11 @@ export class PowerUpSystem {
     return this.states.get(playerId)?.effects(now) ?? NO_EFFECTS;
   }
 
+  /** Dónde hay power-ups ahora mismo (lo usa la IA rival). */
+  positions(): Point[] {
+    return this.orbs.map((orb) => ({ ...orb.position }));
+  }
+
   update(fairies: readonly Fairy[], now: number): void {
     this.nextSpawnAt ??= now + POWER_UP_SPAWN.everyMs / 2;
     if (now >= this.nextSpawnAt) {
