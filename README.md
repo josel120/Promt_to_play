@@ -24,7 +24,7 @@ npm run build      # typecheck + build de producción
 | J1 | W A S D | Espacio |
 | J2 | Flechas | Enter |
 | J3 | I J K L | U |
-| J4 | 8 4 5 6 (numérico) | 0 (numérico) |
+| J4 | 8 4 5 6 | 0 |
 
 Coge las estrellas que aparecen: **Café de rocío** (más velocidad), **Mega hechizo** (más radio) y **Polvo de hada** (casi sin enfriamiento).
 
