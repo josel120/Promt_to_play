@@ -5,6 +5,7 @@ import { GameEvents, gameEvents } from '../shared/events';
 import { SceneKeys } from '../shared/scenes';
 import type { IFlower, MatchResult, PlayerConfig, Scores } from '../shared/types';
 import { Gameplay, startPositions } from '../systems/Gameplay';
+import { winnersOf } from '../systems/scoring';
 import { FlowerPaintEffects } from '../ui/FlowerPaintEffects';
 import { Hud } from '../ui/Hud';
 import { Forest } from '../world/Forest';
@@ -118,9 +119,7 @@ export class GameScene extends Phaser.Scene {
   endMatch(): void {
     if (this.ended) return;
     this.ended = true;
-    const best = Math.max(0, ...Object.values(this.scores));
-    const winners = best === 0 ? [] : this.players.filter((p) => this.scores[p.id] === best).map((p) => p.id);
-    const result: MatchResult = { scores: this.scores, players: this.players, winners };
+    const result: MatchResult = { scores: this.scores, players: this.players, winners: winnersOf(this.scores) };
     gameEvents.emit(GameEvents.GAME_OVER, result);
     this.scene.start(SceneKeys.Results, result);
   }

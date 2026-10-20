@@ -39,7 +39,7 @@ export const FLOWER = {
   count: 40,
   radius: 12,
   /** Tiempo durante el que una flor recién pintada no se puede repintar. */
-  protectionMs: 1500,
+  protectionMs: 2000,
   /** Distancia mínima entre flores al generarlas, en px. */
   minDistance: 40,
   /** Proporción de flores grises (el resto son blancas). */
