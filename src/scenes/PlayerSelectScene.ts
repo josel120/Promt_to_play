@@ -19,7 +19,8 @@ const PANEL_WIDTH = 260;
 const PANEL_HEIGHT = 300;
 
 interface Slot {
-  colorIndex: number;
+  /** null = todavía no ha elegido color. El primero que elige un color se lo queda. */
+  colorIndex: number | null;
   /** Hada de la IA rival: ya está lista y no tiene teclas. */
   cpu: boolean;
   ready: boolean;
@@ -113,7 +114,8 @@ export class PlayerSelectScene extends Phaser.Scene {
     const colorText = this.add.text(x, y + 45, '', { fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
     const status = this.add.text(x, y + 122, '', { fontSize: '20px', color: '#ffd23f' }).setOrigin(0.5);
     if (cpu) {
-      const slot: Slot = { colorIndex: index, cpu, ready: true, fairy, colorText, status, panel };
+      // La CPU recibe su color al empezar la partida, de entre los que queden libres.
+      const slot: Slot = { colorIndex: null, cpu, ready: true, fairy, colorText, status, panel };
       this.refresh(slot);
       return slot;
     }
@@ -127,7 +129,7 @@ export class PlayerSelectScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    const slot: Slot = { colorIndex: index, cpu, ready: false, fairy, colorText, status, panel };
+    const slot: Slot = { colorIndex: null, cpu, ready: false, fairy, colorText, status, panel };
     // Ignora la autorrepetición al mantener pulsada una tecla.
     const onPress = (keyName: string, action: () => void) =>
       this.input.keyboard?.addKey(keyName).on('down', (_key: Phaser.Input.Keyboard.Key, event: KeyboardEvent) => {
@@ -142,18 +144,18 @@ export class PlayerSelectScene extends Phaser.Scene {
 
   private changeColor(slot: Slot, direction: 1 | -1): void {
     if (slot.ready || this.starting) return;
-    const taken = new Set(this.slots.filter((s) => s !== slot).map((s) => s.colorIndex));
-    let next = slot.colorIndex;
+    const taken = new Set(this.slots.filter((s) => s !== slot && s.colorIndex !== null).map((s) => s.colorIndex));
+    let next = slot.colorIndex ?? (direction > 0 ? -1 : COLOR_NAMES.length);
     do {
       next = (next + direction + COLOR_NAMES.length) % COLOR_NAMES.length;
-    } while (taken.has(next) && next !== slot.colorIndex);
+    } while (taken.has(next));
     slot.colorIndex = next;
     sfx.click();
     this.refresh(slot);
   }
 
   private toggleReady(slot: Slot): void {
-    if (this.starting || slot.cpu) return;
+    if (this.starting || slot.cpu || slot.colorIndex === null) return;
     slot.ready = !slot.ready;
     sfx.click();
     this.refresh(slot);
@@ -161,18 +163,44 @@ export class PlayerSelectScene extends Phaser.Scene {
   }
 
   private refresh(slot: Slot): void {
-    const color = COLOR_NAMES[slot.colorIndex];
-    slot.fairy.setTexture(TextureKeys.fairy(color));
-    slot.colorText.setText(color[0].toUpperCase() + color.slice(1));
-    slot.status.setText(slot.cpu ? 'IA rival' : slot.ready ? '¡Lista!' : 'Eligiendo…');
-    slot.panel.setStrokeStyle(3, slot.ready ? FAIRY_COLORS[color] : 0x2e6b41);
+    if (slot.colorIndex === null) {
+      slot.fairy.setTintFill(0x4a5a50).setAlpha(0.6);
+      slot.colorText.setText('—');
+      slot.panel.setStrokeStyle(3, 0x2e6b41);
+    } else {
+      const color = COLOR_NAMES[slot.colorIndex];
+      slot.fairy.clearTint().setAlpha(1).setTexture(TextureKeys.fairy(color));
+      slot.colorText.setText(color[0].toUpperCase() + color.slice(1));
+      slot.panel.setStrokeStyle(3, slot.ready ? FAIRY_COLORS[color] : 0x2e6b41);
+    }
+    const status = slot.cpu
+      ? 'IA rival'
+      : slot.ready
+        ? '¡Lista!'
+        : slot.colorIndex === null
+          ? 'Elige un color'
+          : 'Eligiendo…';
+    slot.status.setText(status);
+  }
+
+  /** Primer color que no está seleccionado por ningún slot. */
+  private firstFreeColor(): number {
+    const taken = new Set(this.slots.map((s) => s.colorIndex));
+    const free = COLOR_NAMES.findIndex((_, i) => !taken.has(i));
+    return free === -1 ? 0 : free;
   }
 
   private startMatch(): void {
     this.starting = true;
+    // Las CPU se quedan con los colores que sobraron.
+    for (const slot of this.slots) {
+      if (!slot.cpu || slot.colorIndex !== null) continue;
+      slot.colorIndex = this.firstFreeColor();
+      this.refresh(slot);
+    }
     const players: PlayerConfig[] = this.slots.map((s, id) => ({
       id,
-      color: COLOR_NAMES[s.colorIndex],
+      color: COLOR_NAMES[s.colorIndex ?? 0],
       keysIndex: id,
       ...(s.cpu && { cpu: true }),
     }));
