@@ -51,7 +51,7 @@ export const PLAYER_KEYS = [
   { up: 'W', down: 'S', left: 'A', right: 'D', spell: 'SPACE' },
   { up: 'UP', down: 'DOWN', left: 'LEFT', right: 'RIGHT', spell: 'ENTER' },
   { up: 'I', down: 'K', left: 'J', right: 'L', spell: 'U' },
-  { up: 'NUMPAD_EIGHT', down: 'NUMPAD_FIVE', left: 'NUMPAD_FOUR', right: 'NUMPAD_SIX', spell: 'NUMPAD_ZERO' },
+  { up: 'EIGHT', down: 'FIVE', left: 'FOUR', right: 'SIX', spell: 'ZERO' },
 ] as const;
 
 export const FOREST = {

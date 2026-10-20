@@ -6,11 +6,11 @@ const LABELS: Record<string, string> = {
   RIGHT: '→',
   SPACE: 'Espacio',
   ENTER: 'Enter',
-  NUMPAD_EIGHT: 'Num8',
-  NUMPAD_FIVE: 'Num5',
-  NUMPAD_FOUR: 'Num4',
-  NUMPAD_SIX: 'Num6',
-  NUMPAD_ZERO: 'Num0',
+  EIGHT: '8',
+  FIVE: '5',
+  FOUR: '4',
+  SIX: '6',
+  ZERO: '0',
 };
 
 export function keyLabel(name: string): string {
