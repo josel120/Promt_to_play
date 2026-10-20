@@ -3,7 +3,7 @@ import type { LobbyPlayer, LobbyProvider, LobbyRoom } from '../../shared/lobby';
 import type { PlayerConfig } from '../../shared/types';
 import type { GameSceneData } from '../../scenes/GameScene';
 import { NetClient } from '../../net/NetClient';
-import { defaultServerUrl, type ClientMessage, type GameMessage, type ServerMessage } from '../../net/protocol';
+import { serverUrl, type ClientMessage, type GameMessage, type ServerMessage } from '../../net/protocol';
 
 const COLORS = Object.keys(FAIRY_COLORS) as FairyColorName[];
 
@@ -30,7 +30,7 @@ export class NetLobbyProvider implements LobbyProvider {
   /** Mensaje 'start' del host (solo invitados): players, seats y flores elegidas. */
   private startMsg?: Extract<GameMessage, { k: 'start' }>;
 
-  constructor(private readonly url = defaultServerUrl(location)) {}
+  constructor(private readonly url = serverUrl(location)) {}
 
   createRoom(playerName: string): Promise<LobbyRoom> {
     return this.handshake(playerName, 'host', { t: 'create' });

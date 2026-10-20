@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decodeServerMessage, defaultServerUrl, sampleFairies, type Snapshot } from './protocol';
+import { decodeServerMessage, defaultServerUrl, serverUrl, sampleFairies, type Snapshot } from './protocol';
 import { FollowControls, RemoteControls } from './remoteControls';
 
 const snap = (x: number): Snapshot => ({ fairies: [{ id: 0, x, y: 0, speed: 1, boosted: false }], powerUps: [] });
@@ -25,6 +25,15 @@ describe('protocolo online', () => {
   it('usa el proxy /net de la misma web', () => {
     expect(defaultServerUrl({ protocol: 'http:', host: 'localhost:5173' })).toBe('ws://localhost:5173/net');
     expect(defaultServerUrl({ protocol: 'https:', host: 'hadas.app' })).toBe('wss://hadas.app/net');
+  });
+
+  it('elige ?server=, luego el servidor del build, luego el proxy /net', () => {
+    const loc = { protocol: 'https:', host: 'hadas.app', search: '' };
+    expect(serverUrl(loc, undefined)).toBe('wss://hadas.app/net');
+    expect(serverUrl(loc, 'wss://relay.onrender.com')).toBe('wss://relay.onrender.com');
+    expect(serverUrl({ ...loc, search: '?online=ABCD&server=ws://localhost:8787' }, 'wss://relay.onrender.com')).toBe(
+      'ws://localhost:8787',
+    );
   });
 });
 

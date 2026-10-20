@@ -77,3 +77,11 @@ export function sampleFairies(buffer: readonly TimedSnapshot[], renderAt: number
 export function defaultServerUrl(loc: Pick<Location, 'protocol' | 'host'>): string {
   return `${loc.protocol === 'https:' ? 'wss' : 'ws'}://${loc.host}/net`;
 }
+
+/** Servidor a usar: `?server=` de la URL, luego VITE_SERVER_URL del build, luego el proxy /net. */
+export function serverUrl(
+  loc: Pick<Location, 'protocol' | 'host' | 'search'>,
+  builtUrl: string | undefined = import.meta.env.VITE_SERVER_URL,
+): string {
+  return new URLSearchParams(loc.search).get('server') || builtUrl || defaultServerUrl(loc);
+}

@@ -68,3 +68,12 @@ Copia el PNG en `assets/sprites/` y añade su clave en `SPRITE_MANIFEST` (`src/v
 ## Despliegue
 Cada push a `main` corre tests, compila y publica en GitHub Pages (workflow `deploy.yml`):
 **https://thaisrodriguez.github.io/Promt_to_play/**
+
+### Online de verdad (sin `npm run server` local)
+GitHub Pages solo sirve archivos: el servidor de salas (`server/relay.mjs`) tiene que vivir en otro sitio con WebSocket.
+1. [Render](https://render.com) → **New → Blueprint** → este repo (usa `render.yaml`, plan gratis). Queda en `https://<nombre>.onrender.com`.
+2. GitHub → **Settings → Secrets and variables → Actions → Variables** → `VITE_SERVER_URL` = `wss://<nombre>.onrender.com`.
+3. Volver a correr el workflow *Desplegar a GitHub Pages* (o hacer push a `main`).
+
+Para probar sin redeploy: `https://thaisrodriguez.github.io/Promt_to_play/?server=wss://<nombre>.onrender.com`.
+El plan gratis de Render se duerme tras 15 min sin uso: la primera conexión puede tardar ~1 min.

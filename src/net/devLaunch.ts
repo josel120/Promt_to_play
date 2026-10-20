@@ -4,13 +4,13 @@ import { SceneKeys } from '../shared/scenes';
 import type { PlayerConfig } from '../shared/types';
 import type { GameSceneData } from '../scenes/GameScene';
 import { NetClient } from './NetClient';
-import { defaultServerUrl } from './protocol';
+import { serverUrl } from './protocol';
 
 const COLORS = Object.keys(FAIRY_COLORS) as FairyColorName[];
 
 /**
  * Lobby provisional (el de verdad es de Thais): `?online=host` crea una sala y `?online=ABCD` se une.
- * `?server=ws://...` cambia el servidor (por defecto, el proxy /net de Vite).
+ * `?server=wss://...` cambia el servidor (ver serverUrl en protocol.ts).
  */
 export function launchOnlineFromUrl(game: Phaser.Game): void {
   const params = new URLSearchParams(location.search);
@@ -18,7 +18,7 @@ export function launchOnlineFromUrl(game: Phaser.Game): void {
   if (!online) return;
   const panel = new Panel();
   panel.say('Conectando con el bosque online…');
-  NetClient.connect(params.get('server') ?? defaultServerUrl(location))
+  NetClient.connect(serverUrl(location))
     .then((client) => (online.toLowerCase() === 'host' ? hostLobby(game, client, panel) : guestLobby(game, client, panel, online)))
     .catch(() => panel.say('No hay servidor online. Arráncalo con: npm run server'));
 }
