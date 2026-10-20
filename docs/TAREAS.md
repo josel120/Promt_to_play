@@ -40,6 +40,7 @@ Carpetas: `src/entities/`, `src/systems/`
 - [x] J8. Colisiones con límites y entre hadas
 - [x] J9. (Extra) Power-ups
 - [x] J10. Tests de puntuación y reglas
+- [x] J11. IA de hada rival: hadas CPU que buscan grupos de flores, roban, cogen power-ups y esquivan obstáculos
 
 ### Integración (hecha)
 `GameScene` crea el bosque (Thais), reparte las flores con `planFlowers` evitando obstáculos y las esquinas de salida, y se lo pasa a `Gameplay` (Jose). El HUD, las partículas y el sonido escuchan los eventos que emite el gameplay.
@@ -52,7 +53,7 @@ Thais T2–T3 + Jose J1–J5. Luego integramos juntos en `GameScene` (ver los `T
 |---|---|
 | ~~Integrar entidades en `GameScene`~~ ✅ | Thais + Jose |
 | Balance | Thais + Jose |
-| IA de hada rival | Jose |
+| ~~IA de hada rival~~ ✅ (J11) | Jose |
 | Sprites reales | Thais |
 | Multijugador online: red/servidor | Jose |
 | Multijugador online: lobby/UI | Thais |

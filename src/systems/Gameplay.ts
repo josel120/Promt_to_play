@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { FAIRY, FLOWER } from '../shared/config';
+import { FAIRY, FLOWER, SPELL } from '../shared/config';
 import type { PlayerConfig, Point } from '../shared/types';
 import { Fairy } from '../entities/Fairy';
 import { Flower } from '../entities/Flower';
@@ -8,6 +8,7 @@ import { scatterPoints, type Bounds, type Circle } from './geometry';
 import { POWER_UP_SPAWN } from './powerUps';
 import { PowerUpSystem } from './PowerUpSystem';
 import { pickQuip } from './quips';
+import { RivalController } from './RivalController';
 import { ScoreSystem } from './ScoreSystem';
 import { SpellSystem } from './SpellSystem';
 
@@ -45,6 +46,21 @@ export class Gameplay {
     this.powerUps = new PowerUpSystem(scene, () => this.findPowerUpSpot(bounds, obstacles));
     this.spells = new SpellSystem(scene, this.flowers, (id, now) => this.powerUps.effects(id, now));
     this.collisions = new CollisionSystem(bounds, obstacles);
+
+    players.forEach((p, i) => {
+      if (!p.cpu) return;
+      const fairy = this.fairies[i];
+      fairy.useControls(
+        new RivalController(fairy, {
+          flowers: this.flowers,
+          obstacles,
+          powerUps: () => this.powerUps.positions(),
+          rivals: () => this.fairies.filter((f) => f !== fairy).map((f) => f.position),
+          spellRadius: (now) => SPELL.radius * this.powerUps.effects(p.id, now).spellRadiusMultiplier,
+          speed: () => FAIRY.speed * fairy.speedMultiplier,
+        }),
+      );
+    });
 
     this.fairies.forEach((f, i) => scene.time.delayedCall(300 + i * 250, () => f.say(pickQuip('start'))));
   }

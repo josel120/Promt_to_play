@@ -8,6 +8,8 @@ export interface PlayerConfig {
   color: FairyColorName;
   /** Índice dentro de PLAYER_KEYS. */
   keysIndex: number;
+  /** Hada controlada por la IA rival (no usa teclas). */
+  cpu?: boolean;
 }
 
 /** Estado de una flor. `owner` es null mientras está blanca o gris. */

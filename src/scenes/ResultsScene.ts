@@ -42,7 +42,7 @@ export class ResultsScene extends Phaser.Scene {
       this.add.text(cx - 240, y, MEDALS[r.position - 1] ?? `${r.position}º`, { fontSize: '30px' }).setOrigin(0.5);
       const fairy = this.add.image(cx - 160, y, TextureKeys.fairy(r.player.color)).setScale(1.2);
       if (isWinner) this.tweens.add({ targets: fairy, y: y - 8, duration: 400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-      this.add.text(cx - 110, y, `Jugador ${r.player.id + 1}`, { fontSize: '26px', color: '#ffffff' }).setOrigin(0, 0.5);
+      this.add.text(cx - 110, y, `${r.player.cpu ? 'CPU' : 'Jugador'} ${r.player.id + 1}`, { fontSize: '26px', color: '#ffffff' }).setOrigin(0, 0.5);
       this.add.text(cx + 250, y, `${r.score} flores`, { fontSize: '26px', color: '#ffffff' }).setOrigin(1, 0.5);
     });
 

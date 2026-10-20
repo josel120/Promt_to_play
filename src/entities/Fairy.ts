@@ -5,7 +5,36 @@ import { normalize } from '../systems/geometry';
 import { FUNNY_FONT, LAYER } from '../systems/layers';
 
 type ControlName = keyof (typeof PLAYER_KEYS)[number];
-type Controls = Record<ControlName, Phaser.Input.Keyboard.Key>;
+type Keys = Record<ControlName, Phaser.Input.Keyboard.Key>;
+
+/** Quién mueve al hada: el teclado de un jugador o la IA rival (systems/RivalController). */
+export interface FairyControls {
+  /** Se llama una vez por frame, antes de leer la dirección y el hechizo. */
+  update?(time: number): void;
+  /** Vector unitario (o cero) hacia donde moverse. */
+  direction(): Point;
+  /** True cuando quiere lanzar el hechizo. */
+  wantsToCast(): boolean;
+}
+
+/** J2: controles de teclado de un jugador según `PLAYER_KEYS`. */
+export class KeyboardControls implements FairyControls {
+  private readonly keys: Keys;
+
+  constructor(keyboard: Phaser.Input.Keyboard.KeyboardPlugin, keysIndex: number) {
+    this.keys = keyboard.addKeys({ ...PLAYER_KEYS[keysIndex] }) as Keys;
+  }
+
+  direction(): Point {
+    const k = this.keys;
+    return normalize(Number(k.right.isDown) - Number(k.left.isDown), Number(k.down.isDown) - Number(k.up.isDown));
+  }
+
+  /** True solo en el frame en que se pulsa la tecla de hechizo. */
+  wantsToCast(): boolean {
+    return Phaser.Input.Keyboard.JustDown(this.keys.spell);
+  }
+}
 
 /**
  * J1 + J2: hada geométrica controlada por teclado.
@@ -19,7 +48,7 @@ export class Fairy implements IFairy {
   speedMultiplier = 1;
 
   private readonly scene: Phaser.Scene;
-  private readonly controls?: Controls;
+  private controls?: FairyControls;
   private readonly pos: Point;
   private readonly root: Phaser.GameObjects.Container;
   private readonly bodyParts: Phaser.GameObjects.Container;
@@ -39,8 +68,7 @@ export class Fairy implements IFairy {
     this.pos = { ...start };
 
     const keyboard = scene.input.keyboard;
-    const keys = PLAYER_KEYS[player.keysIndex];
-    if (keyboard && keys) this.controls = keyboard.addKeys({ ...keys }) as Controls;
+    if (keyboard && !player.cpu && PLAYER_KEYS[player.keysIndex]) this.controls = new KeyboardControls(keyboard, player.keysIndex);
 
     const r = this.radius;
     this.aura = scene.add.circle(0, 0, r * 1.9, this.tint, 0.18);
@@ -109,16 +137,18 @@ export class Fairy implements IFairy {
     this.root.setPosition(p.x, p.y);
   }
 
-  /** True solo en el frame en que se pulsa la tecla de hechizo. */
+  /** Cambia quién mueve al hada (p. ej. la IA rival). */
+  useControls(controls: FairyControls): void {
+    this.controls = controls;
+  }
+
   wantsToCast(): boolean {
-    return !!this.controls && Phaser.Input.Keyboard.JustDown(this.controls.spell);
+    return !!this.controls?.wantsToCast();
   }
 
   update(time: number, delta: number): void {
-    const c = this.controls;
-    const dir = c
-      ? normalize(Number(c.right.isDown) - Number(c.left.isDown), Number(c.down.isDown) - Number(c.up.isDown))
-      : { x: 0, y: 0 };
+    this.controls?.update?.(time);
+    const dir = this.controls?.direction() ?? { x: 0, y: 0 };
     const step = (FAIRY.speed * this.speedMultiplier * delta) / 1000;
     this.moving = dir.x !== 0 || dir.y !== 0;
 
