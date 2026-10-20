@@ -3,6 +3,7 @@ export const SceneKeys = {
   Boot: 'Boot',
   MainMenu: 'MainMenu',
   PlayerSelect: 'PlayerSelect',
+  Lobby: 'Lobby',
   Game: 'Game',
   Pause: 'Pause',
   Results: 'Results',

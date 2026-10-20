@@ -13,7 +13,10 @@ export class MainMenuScene extends Phaser.Scene {
 
     this.add.text(cx, cy - 60, 'Hadas del Bosque', { fontSize: '56px', color: '#ffffff' }).setOrigin(0.5);
     this.add
-      .text(cx, cy + 20, 'Pulsa ENTER para empezar', { fontSize: '24px', color: '#cfe8d5' })
+      .text(cx, cy + 10, 'ENTER · Partida local', { fontSize: '26px', color: '#cfe8d5' })
+      .setOrigin(0.5);
+    this.add
+      .text(cx, cy + 60, 'O · Multijugador online', { fontSize: '26px', color: '#cfe8d5' })
       .setOrigin(0.5);
 
     this.add
@@ -21,5 +24,6 @@ export class MainMenuScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.input.keyboard?.once('keydown-ENTER', () => this.scene.start(SceneKeys.PlayerSelect));
+    this.input.keyboard?.once('keydown-O', () => this.scene.start(SceneKeys.Lobby));
   }
 }
