@@ -28,7 +28,7 @@ npm run build      # typecheck + build de producción
 
 Coge las estrellas que aparecen: **Café de rocío** (más velocidad), **Mega hechizo** (más radio) y **Polvo de hada** (casi sin enfriamiento).
 
-Antes de la partida eliges cuántas hadas humanas juegan (1–4) y cuántas hadas CPU rivales se suman. Con 1 humana hay al menos una CPU. Cada jugador elige su color con izquierda/derecha y confirma con su tecla de hechizo.
+Antes de la partida eliges cuántas hadas humanas juegan (1–4) y cuántas hadas CPU rivales se suman. Con 1 humana hay al menos una CPU. Cada jugador elige su color con izquierda/derecha y confirma con su tecla de hechizo. El primero en elegir un color se lo queda; las CPU reciben los que sobran.
 
 ## Estructura
 ```
